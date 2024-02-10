@@ -13,8 +13,9 @@ app.use(bodyparser.json())
 app.use(bodyparser.urlencoded({ extended: false }))
 app.use(express.json())
 app.use(cookieParser())
-app.use(cors())
-
+app.use(cors({
+    origin: ['*', 'https://m.stripe.network', 'https://js.stripe.com']
+  }));
 //database
 const {dbconnect} = require("./config/dbconnect")
 
@@ -25,6 +26,7 @@ app.use("/user", userAuth)
 app.get("/", (req,res)=>{
     res.send("<h1>Welcome to Prepbytes Elevation Academy Website</h1>");
 })
+
 
 
 const PORT = process.env.PORT || 9090

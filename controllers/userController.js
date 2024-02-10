@@ -3,16 +3,19 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../model/userModel");
 const { generateToken } = require("../config/jwttoken");
+const Stripe = require("stripe")
+const stripe= Stripe(process.env.Stripe)
 
+// console.log(process.env.Stripe)
 const signup = async (req, res) => {
   try {
     const { username, email, password, phonenumber, college, passingyear } =
       req.body;
-    console.log(req.body)
+    console.log(req.body);
     // Check if user with the same email or phone number already exists
     const existingUser = await User.findOne({
       // $or: [{ email }, { phonenumber }],
-      email
+      email,
     });
     if (existingUser) {
       return res.status(400).json({
@@ -22,7 +25,7 @@ const signup = async (req, res) => {
 
     // Hash the password before saving it to the database
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log(hashedPassword)
+    console.log(hashedPassword);
     // Create a new user instance
     const newUser = new User({
       username,
@@ -39,7 +42,7 @@ const signup = async (req, res) => {
     // Generate JWT token
     const token = generateToken(newUser._id);
 
-    res.status(201).json({ token, user: newUser,message:'Profile Created' });
+    res.status(201).json({ token, user: newUser, message: "Profile Created" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -49,15 +52,15 @@ const signup = async (req, res) => {
 const signin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(req.body)
+    console.log(req.body);
     // Find user by email or phone number
     // const user = await User.findOne({ email : emailOrPhoneNumber
     //   // $or: [{ email: emailOrPhoneNumber }, { phonenumber: emailOrPhoneNumber }],
     // });
-    const user= await User.findOne({
-      email
-    })
-    console.log(user)
+    const user = await User.findOne({
+      email,
+    });
+    console.log(user);
     if (!user) {
       return res
         .status(401)
@@ -65,7 +68,7 @@ const signin = async (req, res) => {
     }
     // Check if the provided password matches the stored hashed password
     const passwordMatch = await bcrypt.compare(password, user.password);
-    console.log(passwordMatch)
+    console.log(passwordMatch);
     if (!passwordMatch) {
       return res
         .status(401)
@@ -82,4 +85,138 @@ const signin = async (req, res) => {
   }
 };
 
-module.exports = {signin, signup}
+// const checkout = async (req, res) => {
+//   const { price_data } = req.body;
+//   const { email } = req.body;
+//   console.log(req.body);
+
+//   let purchaseCourse = {};
+//   purchaseCourse = price_data;
+//   const lineItems = [price_data].map((product) => ({
+//     price_data: {
+//       currency: "inr",
+//       product_data: {
+//         name: product.name,
+//         images: [product.url],
+//       },
+//       unit_amount: product.price * 100,
+//     },
+//     quantity: product.quantity,
+//   }));
+//   const session = await stripe.checkout.sessions.create({
+//     payment_method_types: ["card"],
+//     line_items: lineItems,
+//     mode: "payment",
+//     success_url:
+//       "http://localhost:4000/order/success?session_id={CHECKOUT_SESSION_ID}&email=" +
+//       email,
+//     cancel_url: `https://prepbytes-clone-three.vercel.app//master-competitive-programming`,
+//   });
+//   console.log(session);
+//   res.json({ id: session?.id, session: session });
+// };
+
+// const order = async (req, res) => {
+//   let purchaseCourse = {};
+//   let email = req.query.email;
+//   let checkUser = await User.findOne({ email: email });
+//   if (checkUser) {
+//     let data = {};
+//     console.log(purchaseCourse);
+//     checkUser.course
+//       ? (data = {
+//           ...checkUser,
+//           course: [...checkUser.course, purchaseCourse],
+//         })
+//       : (data = {
+//           ...checkUser,
+//           course: [purchaseCourse],
+//         });
+//     console.log(data);
+//     try {
+//       await User.updateOne(
+//         { email: email },
+//         { $push: { course: purchaseCourse } },
+//         (err, result) => {
+//           if (err) {
+//             console.log(err);
+//           } else {
+//             console.log(result);
+//           }
+//         }
+//       );
+//     } catch (e) {
+//       console.log(e);
+//     }
+//   }
+//   res.redirect("https://prepbytes-clone-three.vercel.app/dashboard");
+// };
+
+// const offer = async (req, res) => {
+//   let email = req.body.email;
+//   let checkUser = await User.findOne({ email: email });
+//   res.json(checkUser);
+// };
+
+// const enquiryform = async (req, res) => {
+//   try {
+//     console.log(req.body);
+//     await enquiry.insertOne(req.body);
+//     res.status(200).send("Enquiry Send to host");
+//   } catch (e) {
+//     res.status(500);
+//   }
+// };
+
+let = purchaseCourse = {};
+const createCheckOutSession = async (req, res) => {
+  // console.log(req.body);
+  const { products } = req.body;
+
+  const { email } = req.body;
+  // console.log(req.body.email);
+  if (email === undefined) {
+    res.json({ err: "user email missing" });
+  }
+    purchaseCourse = products;
+    // console.log(purchaseCourse);
+
+
+    const lineItems = [products].map((product) => ({
+      price_data: {
+        currency: "inr",
+        product_data: {
+          name: product.name,
+          images: [product.url],
+        },
+        unit_amount: product.price * 100,
+      },
+      quantity: product.quantity,
+    }));
+    // console.log(lineItems)
+    
+    // const session = await stripe.checkout.sessions.create({
+    //   payment_method_types: ["card"],
+    //   line_items: lineItems,
+    //   mode: "payment",
+    //   success_url:
+    //     "https://prepbytes-clone-yczy.onrender.com/order/success?session_id={CHECKOUT_SESSION_ID}&email=" +
+    //     email,
+    //   cancel_url: `https://prepbytes-clone-1.netlify.app/master-competitive-programming`,
+    // });
+
+    // console.log(session)
+
+    const customer = await stripe.customers.create(
+      {
+        description: 'My First Test Customer (created for API docs at https://www.stripe.com/docs/api)',
+      },
+      {
+        idempotencyKey: 'KG5LxwFBepaKHyUD',
+      }
+    );
+    console.log(customer)
+    // res.json({ id: session.id, session: session });
+  
+};
+module.exports = { signin, signup, createCheckOutSession };

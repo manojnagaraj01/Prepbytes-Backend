@@ -3,18 +3,20 @@ const bodyparser = require('body-parser')
 const cors = require('cors')
 const cookieParser = require('cookie-parser')
 const app = express()
-const dotenv = require("dotenv")
+const dotenv = require('dotenv').config()
+
+
 const userAuth = require("./routes/userRoutes")
 
 
-dotenv.config()
+
 
 app.use(bodyparser.json())
 app.use(bodyparser.urlencoded({ extended: false }))
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
-    origin: ['*', 'https://m.stripe.network', 'https://js.stripe.com']
+    origin: ['*', 'https://m.stripe.network', 'https://js.stripe.com', 'https://stripe-payments-app.herokuapp.com','http://localhost:5173'],
   }));
 //database
 const {dbconnect} = require("./config/dbconnect")
